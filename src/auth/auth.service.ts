@@ -1,6 +1,4 @@
-// auth.service.ts
-
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -21,14 +19,26 @@ export class AuthService {
   ) {}
 
   async signup(dto: SignupDto) {
+    const existingUser = await this.usersService.findByEmail(dto.email);
+    if (existingUser) {
+      throw new ConflictException('Email already registered');
+    }
+  
     const hashed = await bcrypt.hash(dto.password, 10);
     const user: User = await this.usersService.create({
       email: dto.email,
       name: dto.name,
       password: hashed,
     });
+  
+    if (!user || !user.id) {
+      console.error('❌ Invalid user:', user); // ← لاگ برای بررسی
+      throw new Error('User creation failed or did not return user data');
+    }
+  
     return this.signToken(user.id, user.email);
   }
+  
 
   async login(dto: LoginDto) {
     const user: User = await this.usersService.findByEmail(dto.email);

@@ -26,5 +26,6 @@ import { ConfigService } from '@nestjs/config';
     },
   ],
   controllers: [UsersController],
+  exports: [UsersService],  // <-- این خط اضافه شود
 })
 export class UsersModule {}

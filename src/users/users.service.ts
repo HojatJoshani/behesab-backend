@@ -20,17 +20,28 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    const { data, error } = await this.supabase.from('users').select('*').eq('email', email).single();
+    const { data, error } = await this.supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
     if (error) throw error;
     return data;
   }
 
   async create(createUserDto: CreateUserDto) {
-    // توجه: رمز عبور باید قبل از اینجا هَش شده باشه
-    const { data, error } = await this.supabase.from('users').insert([createUserDto]).single();
+    const { data, error } = await this.supabase
+      .from('users')
+      .insert([createUserDto])
+      .select() // ← این خط رو اضافه کن
+      .single();
+  
     if (error) throw error;
+    if (!data) throw new Error('Insert succeeded but no data returned');
+  
     return data;
   }
+  
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     const { data, error } = await this.supabase.from('users').update(updateUserDto).eq('id', id).single();
