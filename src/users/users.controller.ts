@@ -1,22 +1,21 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
-  // ✅ لیست همه کاربران (فقط برای ادمین‌ها)
-  @UseGuards(JwtAuthGuard)
+  // 🟢 Public: Get all users (optional – you can add guard here if needed)
   @Get()
-  async findAll(@Req() req) {
+  findAll() {
     return this.usersService.findAll();
   }
 
-  // ✅ اطلاعات خود کاربر لاگین‌شده
+  // 🔐 Protected: Get logged-in user's profile using JWT
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Req() req) {
-    return this.usersService.findOne(req.user.sub); // `sub` = userId from JWT
+    return this.usersService.findOne(req.user.userId) //the userId from JWT
   }
 }
